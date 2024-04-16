@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood DApp</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        div {
+            width: 20%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        button {
+            width: 100%;
+            margin: 10px 0px 5px 0px;
+        }
+    </style>
+    <!-- Include ethers.js library -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"></script>
+
+    <script>
+        // Replace the following two values
+        const MoodContractAddress = '0x1F74416e3480F4D5C97fFb0Cb63EC21a154BF713';
+        const MoodContractABI = [{
+            "inputs": [{
+                "internalType": "string",
+                "name": "_mood",
+                "type": "string"
+            }],
+            "name": "setMood",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getMood",
+            "outputs": [{
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }],
+            "stateMutability": "view",
+            "type": "function"
+        }];
+
+        // Currently these two are undefined, we will use Ethers to assign them values
+        let MoodContract = undefined;
+        let signer = undefined;
+
+        // Add Web3Provider
+        const provider = new ethers.providers.Web3Provider(window.ethereum, "sepolia");
+
+        // Request access to user's wallet and assign values to MoodContract and signer
+        provider.send("eth_requestAccounts", []).then(() => {
+            provider.listAccounts().then((accounts) => {
+                signer = provider.getSigner(accounts[0]);
+                MoodContract = new ethers.Contract(
+                    MoodContractAddress,
+                    MoodContractABI,
+                    signer
+                );
+
+                // Call setMood function after MoodContract and signer have been initialized
+                setMood();
+            });
+        });
+
+        // Function to get mood from the smart contract
+        async function getMood() {
+            const mood = await MoodContract.getMood();
+            document.getElementById("showMood").innerText = `Your Mood: ${mood}`;
+            console.log(mood);
+        }
+
+        // Function to set mood in the smart contract
+        async function setMood() {
+            const mood = document.getElementById("mood").value;
+            await MoodContract.setMood(mood);
+        }
+    </script>
+</head>
+<body>
+  <div>
+    <h1>Welcome to Mood DApp!</h1>
+    <h2>😄😭😎😤🥳🤒😴🥶🥵🥰</h2>
+    <label for="mood">How are you feeling today?</label> <br />
+    <input type="text" id="mood" />
+    <button onclick="setMood()">Set Mood</button>
+    <button onclick="getMood()">Get Mood</button>
+    <p id="showMood"></p>
+  </div>
+</body>
+</html>
+
+
+
